@@ -6,9 +6,12 @@ def exit():
 
 def ls():
     path = os.getcwd()
-    fichiers = os.listdir(path)
-    for fichier in fichiers:
-        print(fichier)
+    for elem in os.listdir(path):
+        chemin_entier = os.path.join(path, elem)
+        if os.path.isfile(chemin_entier):
+            print(f"Fichier: {elem}")
+        elif os.path.isdir(chemin_entier):
+            print(f"Dossier: {elem}")
 
 def createFile():
     fichier = input("Entrer le nom du fichier : ")
