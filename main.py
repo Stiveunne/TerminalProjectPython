@@ -1,10 +1,13 @@
 import sys
 import os
 
-commandList = ["BJ", "exit", "ls", "createFile", "createFolder", "FileTest", "deleteFile","help","cd"]
+commandList = {"BJ" : "test", "exit" :"Ferme le terminal", "ls" : "Affiche les fichiers et dossiers du répertoire courant", "createFile" : "Créer un fichier", "createFolder":"Créer un dossier", "FileTest":"Vérifie la taille et l'existence d'un fichier", "deleteFile":"Supprime un fichier","help":"Affiche la liste des commandes ainsi que leur description","cd":"Changer de répertoire","clear":"Nettoie le terminal"}
 
 def exit():
     sys.exit(0)
+
+def clear():
+    os.system("cls")
 
 def ls():
     path = os.getcwd()
@@ -59,18 +62,22 @@ def cd(option):
 
 def help():
     global commandList
-    for co in commandList:
-        print(co)
+    for co,desc in commandList.items():
+        print(co + ": " + desc +"\n")
 
 def Terminal():
     global commandList
     while True:
-        command = input(">>> ")
+        command = input(f"{os.getcwd()} >>> ")
 
         # Test
         if command == "BJ":
             sys.stdout.write("Gambler de merde")
             sys.exit(0)
+
+        #Commande Clear (nettoyage du terminal)
+        if command == "clear":
+            clear()
 
         #Affichage de répertoire courant
         if command == "ls":
@@ -85,7 +92,7 @@ def Terminal():
             deleteFile()
 
         #Vérification : Taille et Existence d'un fichier
-        if command == "Filetest":
+        if command == "FileTest":
             FileTest()
 
         #Création d'un dossier
