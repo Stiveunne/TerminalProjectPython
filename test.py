@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 # Liste de toutes les commandes disponibles dans le terminal
-commandList = ["BJ", "exit", "ls", "createFile", "createFolder", "FileTest", "deleteFile", "help", "cd", "cd .."]
+commandList = ["BJ", "exit", "ls", "createFile <nom>", "createFolder <nom>", "FileTest <nom>", "deleteFile <nom>", "help", "cd <chemin>", "cd ..", "clear"]
 
 # Quitte le programme
 def exit_cmd():
@@ -23,8 +23,11 @@ def ls():
     return output
 
 # Demande le nom du fichier à créer, puis appelle le callback
-def createFile(terminal):
-    terminal.ask_input("Entrer le nom du fichier : ", _createFile_callback)
+def createFile(terminal, fichier=None):
+    if fichier:
+        _createFile_callback(fichier, terminal)
+    else:
+        terminal.ask_input("Entrer le nom du fichier : ", _createFile_callback)
 
 # Crée le fichier avec le nom saisi, puis remet le prompt
 def _createFile_callback(fichier, terminal):
@@ -34,8 +37,11 @@ def _createFile_callback(fichier, terminal):
     terminal.ready()
 
 # Demande le nom du fichier à supprimer, puis appelle le callback
-def deleteFile(terminal):
-    terminal.ask_input("Fichier a supprimer : ", _deleteFile_callback)
+def deleteFile(terminal, fichier=None):
+    if fichier:
+        _deleteFile_callback(fichier, terminal)
+    else: 
+        terminal.ask_input("Fichier a supprimer : ", _deleteFile_callback)
 
 # Vérifie que le fichier existe, puis demande une confirmation avant suppression
 def _deleteFile_callback(fichier_a_supprimer, terminal):
@@ -59,8 +65,11 @@ def _deleteFile_confirm(confirmation, terminal, fichier, chemin):
     terminal.ready()
 
 # Demande le nom du fichier à vérifier, puis appelle le callback
-def FileTest(terminal):
-    terminal.ask_input("Entrer le nom d'un fichier a verifier : ", _filetest_callback)
+def FileTest(terminal, fichier=None):
+    if fichier:
+        _filetest_callback(fichier, terminal)
+    else:
+        terminal.ask_input("Entrer le nom d'un fichier a verifier : ", _filetest_callback)
 
 # Vérifie l'existence du fichier et affiche sa taille si il existe
 def _filetest_callback(fichier_test, terminal):
@@ -72,8 +81,11 @@ def _filetest_callback(fichier_test, terminal):
     terminal.ready()
 
 # Demande le nom du dossier à créer, puis appelle le callback
-def createFolder(terminal):
-    terminal.ask_input("Entrer le nom du dossier : ", _createFolder_callback)
+def createFolder(terminal, folder=None):
+    if folder:
+        _createFolder_callback(folder, terminal)
+    else:
+        terminal.ask_input("Entrer le nom du dossier : ", _createFolder_callback)
 
 # Crée le dossier s'il n'existe pas déjà
 def _createFolder_callback(folder, terminal):
@@ -91,6 +103,8 @@ def cd(option=None, terminal=None):
         parent = os.path.dirname(os.getcwd())
         os.chdir(parent)
         terminal.ready()
+    elif option:
+        _cd_callback(option, terminal)
     else:
         terminal.ask_input("Chemin : ", _cd_callback)
 
@@ -166,7 +180,8 @@ class TerminalApp:
 
         # Stocke le callback en attente
         self._pending_callback = None
-        self.print_output("Tapez 'help' pour voir les commandes disponibles.\n", tag="info")
+        self._welcome_msg = "Tapez 'help' pour voir les commandes disponibles.\n"
+        self.print_output(self._welcome_msg, tag="info")
 
     # Retourne le chemin courant formaté pour le prompt
     def _prompt_text(self):
@@ -203,7 +218,9 @@ class TerminalApp:
             return
 
         # Traitement des commandes
-        command = user_input.strip()
+        parts = user_input.strip().split(" ", 1)
+        command = parts[0]
+        argument = parts[1] if len(parts)>1 else None
 
         if command == "BJ":
             self.print_output("Gambler de merde\n", tag="error")
@@ -211,23 +228,29 @@ class TerminalApp:
         elif command == "ls":
             self.print_output(ls())
         elif command == "createFile":
-            createFile(self)
+            createFile(self, argument)
             return
         elif command == "deleteFile":
-            deleteFile(self)
+            deleteFile(self, argument)
             return
-        elif command == "FileTest" or command == "Filetest":
-            FileTest(self)
+        elif command == "FileTest":
+            FileTest(self, argument)
             return
         elif command == "createFolder":
-            createFolder(self)
+            createFolder(self, argument)
             return
         elif command == "cd":
-            cd(terminal=self)
+            cd(option=argument, terminal=self)
             return
         elif command == "cd ..":
             cd(option="..", terminal=self)
             return
+        elif command == "clear":
+            self.output.config(state="normal")
+            self.output.delete("1.0", "end")
+            self.output.config(state="disabled")
+            self.print_output(self._welcome_msg, tag="info")
+
         elif command == "help":
             self.print_output(help_cmd())
         elif command == "exit":
