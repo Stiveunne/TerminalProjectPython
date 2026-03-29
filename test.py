@@ -2,9 +2,10 @@ import sys
 import os
 import tkinter as tk
 from tkinter import scrolledtext
+import datetime
 
 # Liste de toutes les commandes disponibles dans le terminal
-commandList = ["BJ", "exit", "ls", "createFile <nom>", "createFolder <nom>", "FileTest <nom>", "deleteFile <nom>", "help", "cd <chemin>", "cd ..", "clear"]
+commandList = ["BJ", "exit", "ls", "createFile <nom>", "createFolder <nom>", "FileTest <nom>", "deleteFile <nom>", "help", "cd <chemin>", "cd ..", "clear", "time"]
 
 # Quitte le programme
 def exit_cmd():
@@ -120,6 +121,18 @@ def _cd_callback(path, terminal):
         terminal.print_output(f"Le dossier {path} n'existe pas\n")
     terminal.ready()
 
+def time(terminal, option=None):
+    if option:
+        _time_callback(option, terminal)
+    else:
+        terminal.print_output(datetime.datetime.now())
+    
+def _time_callback(option, terminal):
+    if option == "-t":
+        terminal.print_output(datetime.time())
+    if option == "-d":
+        terminal.print_output(datetime.date.today())
+
 # Retourne la liste des commandes disponibles sous forme de string
 def help_cmd():
     return "\n".join(commandList) + "\n"
@@ -227,6 +240,8 @@ class TerminalApp:
             sys.exit(0)
         elif command == "ls":
             self.print_output(ls())
+        elif command == "time":
+            time(self, argument)
         elif command == "createFile":
             createFile(self, argument)
             return
