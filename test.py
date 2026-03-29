@@ -1,12 +1,26 @@
+import datetime
 import sys
 import os
 import tkinter as tk
 from tkinter import scrolledtext
-import datetime
 
 # Liste de toutes les commandes disponibles dans le terminal
-commandList = ["BJ", "exit", "ls", "createFile <nom>", "createFolder <nom>", "FileTest <nom>", "deleteFile <nom>", "help", "cd <chemin>", "cd ..", "clear", "time"]
-
+commandListV2 = {
+    "pwd": "Affiche le répertoire courant",
+    "echo <texte>": "Affiche un texte rentré en paramètre",
+    "time <option>": "Affiche la date et l'heure. -d Date only, -t Time only",
+    "exit": "Quitter le terminal",
+    "ls": "Affiche les éléments du répertoire courant",
+    "open <chemin complet/nom>": "Ouvre le fichier rentrée en paramètre",
+    "createFile": "Créer un fichier",
+    "createFolder": "Créer un dossier",
+    "FileTest": "Vérifie la taille et l'existence d'un fichier",
+    "deleteFile": "Supprimer un fichier",
+    "help": "Affiche la liste des commandes ainsi que leur description",
+    "cd <chemin>": "Changer de répertoire",
+    "cd ..": "Revenir au répertoire parent",
+    "clear": "Nettoie le terminal"
+}
 # Quitte le programme
 def exit_cmd():
     sys.exit(0)
@@ -22,6 +36,20 @@ def ls():
         elif os.path.isdir(chemin_entier):
             output += f"Dossier: {elem}\n"
     return output
+
+#Retourne le répertoire courant
+def pwd():
+    return os.getcwd()
+
+def ouvrir(terminal,fichier=None):
+    if fichier:
+        _ouvrir_callback(fichier,terminal)
+    else:
+        terminal.ask_input("Entrer le chemin ou le nom du fichier à ouvrir : ", _ouvrir_callback)
+
+def _ouvrir_callback(fichier, terminal):
+    os.system(fichier)
+    terminal.ready()
 
 # Demande le nom du fichier à créer, puis appelle le callback
 def createFile(terminal, fichier=None):
@@ -121,21 +149,34 @@ def _cd_callback(path, terminal):
         terminal.print_output(f"Le dossier {path} n'existe pas\n")
     terminal.ready()
 
-def time(terminal, option=None):
+#Affiche l'heure et/ou la date, en fonction de l'option. Les deux par défaut
+def time(option=None, terminal=None):
     if option:
         _time_callback(option, terminal)
     else:
-        terminal.print_output(datetime.datetime.now())
-    
+        terminal.print_output(str(datetime.datetime.now()) + "\n")
+
 def _time_callback(option, terminal):
     if option == "-t":
-        terminal.print_output(datetime.time())
+        terminal.print_output(str(datetime.datetime.now().strftime("%H:%M:%S"))+ "\n")
     if option == "-d":
-        terminal.print_output(datetime.date.today())
+        terminal.print_output(str(datetime.date.today()) + "\n")
+
+def echo(option=None, terminal=None):
+    if option:
+        terminal.print_output(str(option) + "\n")
+    else:
+        terminal.ask_input("Que voulez vous echo : ",_echo_callback)
+
+def _echo_callback(s, terminal):
+    if s:
+        terminal.print_output(str(s) + "\n")
+
 
 # Retourne la liste des commandes disponibles sous forme de string
-def help_cmd():
-    return "\n".join(commandList) + "\n"
+def help_cmd(terminal):
+    for key,value in commandListV2.items():
+        terminal.print_output(f"\n{key}: {value}\n")
 
 
 class TerminalApp:
@@ -240,18 +281,24 @@ class TerminalApp:
             sys.exit(0)
         elif command == "ls":
             self.print_output(ls())
+        elif command == "pwd":
+            self.print_output(pwd())
         elif command == "time":
-            time(self, argument)
-        elif command == "createFile":
+            time(argument,self)
+        elif command == "open":
+            ouvrir(self,argument)
+        elif command == "echo":
+            echo(argument,self)
+        elif command.lower() == "createfile":
             createFile(self, argument)
             return
-        elif command == "deleteFile":
+        elif command.lower() == "deletefile":
             deleteFile(self, argument)
             return
-        elif command == "FileTest":
+        elif command.lower() == "Filetest":
             FileTest(self, argument)
             return
-        elif command == "createFolder":
+        elif command.lower() == "createfolder":
             createFolder(self, argument)
             return
         elif command == "cd":
@@ -267,7 +314,7 @@ class TerminalApp:
             self.print_output(self._welcome_msg, tag="info")
 
         elif command == "help":
-            self.print_output(help_cmd())
+            help_cmd(self)
         elif command == "exit":
             exit_cmd()
         elif command == "":
