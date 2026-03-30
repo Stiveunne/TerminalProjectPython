@@ -41,13 +41,13 @@ def ls():
 def pwd():
     return os.getcwd()
 
-def ouvrir(terminal,fichier=None):
+def _open(terminal,fichier=None):
     if fichier:
-        _ouvrir_callback(fichier,terminal)
+        _open_callback(fichier,terminal)
     else:
-        terminal.ask_input("Entrer le chemin ou le nom du fichier à ouvrir : ", _ouvrir_callback)
+        terminal.ask_input("Entrer le chemin ou le nom du fichier à ouvrir : ", _open_callback)
 
-def _ouvrir_callback(fichier, terminal):
+def _open_callback(fichier, terminal):
     os.system(fichier)
     terminal.ready()
 
@@ -276,26 +276,25 @@ class TerminalApp:
         command = parts[0]
         argument = parts[1] if len(parts)>1 else None
 
-        if command == "BJ":
-            self.print_output("Gambler de merde\n", tag="error")
-            sys.exit(0)
-        elif command == "ls":
+        if command == "ls":
             self.print_output(ls())
         elif command == "pwd":
             self.print_output(pwd())
         elif command == "time":
             time(argument,self)
         elif command == "open":
-            ouvrir(self,argument)
+            _open(self,argument)
+            return
         elif command == "echo":
             echo(argument,self)
+            return
         elif command.lower() == "createfile":
             createFile(self, argument)
             return
         elif command.lower() == "deletefile":
             deleteFile(self, argument)
             return
-        elif command.lower() == "Filetest":
+        elif command.lower() == "filetest":
             FileTest(self, argument)
             return
         elif command.lower() == "createfolder":
